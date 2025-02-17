@@ -24,6 +24,7 @@ export default function BookingForm({ teacherId, onSuccess }: BookingFormProps) 
       subject: "",
       message: "",
       date: new Date(),
+      status: "pending", // Add default status
     },
   });
 
@@ -63,7 +64,7 @@ export default function BookingForm({ teacherId, onSuccess }: BookingFormProps) 
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={form.control}
           name="message"
@@ -73,6 +74,7 @@ export default function BookingForm({ teacherId, onSuccess }: BookingFormProps) 
               <FormControl>
                 <Textarea
                   {...field}
+                  value={field.value || ""} // Ensure value is always a string
                   placeholder="Tell the teacher what you want to learn..."
                 />
               </FormControl>

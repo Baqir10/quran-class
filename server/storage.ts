@@ -5,11 +5,11 @@ export interface IStorage {
   getTeachers(): Promise<Teacher[]>;
   getTeacher(id: number): Promise<Teacher | undefined>;
   searchTeachers(query: string, subjects?: string[]): Promise<Teacher[]>;
-  
+
   // Students
   createStudent(student: InsertStudent): Promise<Student>;
   getStudentByEmail(email: string): Promise<Student | undefined>;
-  
+
   // Bookings
   createBooking(booking: InsertBooking): Promise<Booking>;
   getBookingsByStudent(studentId: number): Promise<Booking[]>;
@@ -27,7 +27,7 @@ export class MemStorage implements IStorage {
     this.students = new Map();
     this.bookings = new Map();
     this.currentIds = { teacher: 1, student: 1, booking: 1 };
-    
+
     // Initialize with mock teachers
     mockTeachers.forEach(teacher => {
       const id = this.currentIds.teacher++;
@@ -48,10 +48,10 @@ export class MemStorage implements IStorage {
       const matchesQuery = !query || 
         teacher.name.toLowerCase().includes(query.toLowerCase()) ||
         teacher.bio.toLowerCase().includes(query.toLowerCase());
-      
+
       const matchesSubjects = !subjects?.length || 
         subjects.some(subject => teacher.subjects.includes(subject));
-      
+
       return matchesQuery && matchesSubjects;
     });
   }
@@ -71,7 +71,12 @@ export class MemStorage implements IStorage {
 
   async createBooking(insertBooking: InsertBooking): Promise<Booking> {
     const id = this.currentIds.booking++;
-    const booking = { ...insertBooking, id };
+    const booking = {
+      ...insertBooking,
+      id,
+      status: insertBooking.status || "pending",
+      message: insertBooking.message || null
+    };
     this.bookings.set(id, booking);
     return booking;
   }
