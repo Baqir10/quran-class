@@ -3,18 +3,38 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
-import { type Booking } from "@shared/schema";
+import { type Booking, type Teacher } from "@shared/schema";
 import { format } from "date-fns";
+
+interface BookingWithTeacher extends Booking {
+  teacher?: Teacher;
+}
 
 export default function CalendarView() {
   const [date, setDate] = useState<Date>(new Date());
 
-  const { data: bookings, isLoading } = useQuery<Booking[]>({
+  // Fetch bookings with teacher information
+  const { data: bookings, isLoading } = useQuery<BookingWithTeacher[]>({
     queryKey: ["/api/bookings/student/1"], // Hardcoded student ID for now
+    queryFn: async () => {
+      const res = await fetch("/api/bookings/student/1");
+      const bookings = await res.json();
+
+      // Fetch teacher details for each booking
+      const bookingsWithTeachers = await Promise.all(
+        bookings.map(async (booking) => {
+          const teacherRes = await fetch(`/api/teachers/${booking.teacherId}`);
+          const teacher = await teacherRes.json();
+          return { ...booking, teacher };
+        })
+      );
+
+      return bookingsWithTeachers;
+    },
   });
 
   // Create a map of dates to bookings for easier lookup
-  const bookingsByDate = new Map<string, Booking[]>();
+  const bookingsByDate = new Map<string, BookingWithTeacher[]>();
   bookings?.forEach((booking) => {
     const dateStr = format(new Date(booking.date), "yyyy-MM-dd");
     const existing = bookingsByDate.get(dateStr) || [];
@@ -48,24 +68,40 @@ export default function CalendarView() {
         <h2 className="text-2xl font-bold">
           Classes on {format(date, "MMMM d, yyyy")}
         </h2>
-        
+
         {isLoading ? (
-          <p>Loading bookings...</p>
+          <p>Loading classes...</p>
         ) : (
           <div className="space-y-4">
             {bookingsByDate.get(format(date, "yyyy-MM-dd"))?.map((booking) => (
               <Card key={booking.id}>
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-semibold">{booking.subject}</h3>
+                <CardContent className="p-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="text-lg font-semibold">{booking.subject}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        with {booking.teacher?.name}
+                      </p>
+                    </div>
                     <Badge>{booking.status}</Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    {format(new Date(booking.date), "h:mm a")}
-                  </p>
-                  {booking.message && (
-                    <p className="text-sm mt-2">{booking.message}</p>
-                  )}
+
+                  <div className="space-y-2">
+                    <p className="text-sm">
+                      <span className="font-medium">Time:</span> {format(new Date(booking.date), "h:mm a")}
+                    </p>
+                    {booking.teacher && (
+                      <p className="text-sm">
+                        <span className="font-medium">Rate:</span> ${booking.teacher.hourlyRate}/hour
+                      </p>
+                    )}
+                    {booking.message && (
+                      <div className="mt-4">
+                        <p className="text-sm font-medium mb-1">Notes:</p>
+                        <p className="text-sm text-muted-foreground">{booking.message}</p>
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             )) || (
