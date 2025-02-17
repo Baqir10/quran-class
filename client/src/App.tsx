@@ -7,6 +7,7 @@ import Home from "@/pages/home";
 import Teachers from "@/pages/teachers";
 import TeacherDetails from "@/pages/teacher-details";
 import Register from "@/pages/register";
+import Calendar from "@/pages/calendar";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -19,6 +20,7 @@ function Router() {
           <Route path="/teachers" component={Teachers} />
           <Route path="/teachers/:id" component={TeacherDetails} />
           <Route path="/register" component={Register} />
+          <Route path="/calendar" component={Calendar} />
           <Route component={NotFound} />
         </Switch>
       </main>

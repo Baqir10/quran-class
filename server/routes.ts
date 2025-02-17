@@ -59,6 +59,13 @@ export async function registerRoutes(app: Express) {
     res.status(201).json(booking);
   });
 
+  // Get bookings for a student
+  app.get("/api/bookings/student/:id", async (req, res) => {
+    const studentId = parseInt(req.params.id);
+    const bookings = await storage.getBookingsByStudent(studentId);
+    res.json(bookings);
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

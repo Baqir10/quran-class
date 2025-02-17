@@ -12,6 +12,9 @@ export default function Nav() {
           <Link href="/teachers">
             <a className="text-gray-600 hover:text-primary">Find Teachers</a>
           </Link>
+          <Link href="/calendar">
+            <a className="text-gray-600 hover:text-primary">My Schedule</a>
+          </Link>
           <Link href="/register">
             <Button>Register</Button>
           </Link>
